@@ -1,0 +1,16 @@
+[
+    {
+        "visible": true,
+        "title": "Example Title",
+        "thumbnail": "Example Thumbnail.png",
+        "video": "Example Video.mp4",
+        "subtitles": "Example Subtitles.vtt"
+    },
+	{
+        "visible": false,
+        "title": "Example Title",
+        "thumbnail": "Example Thumbnail.jpg",
+        "video": "Example Video.mp4",
+        "subtitles": "Example Subtitles.vtt"
+    }
+]

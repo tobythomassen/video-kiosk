@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Kiosk</title>
+    <script src="jQuery.js"></script>
+    <link rel="stylesheet" href="./font-awesome/all.css">
+
+    <style>
+        @font-face {
+            font-family: Karla;
+            src: url("Karla.woff2");
+        }
+
+        .background {
+            background: #c7d2f0;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        img {
+            margin-top: 8vh;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: 512px;
+        }
+
+        h1 {
+            margin-top: 64px;
+            font-family: Karla, Arial, Helvetica, sans-serif;
+            letter-spacing: 2px;
+            font-size: 72px;
+            color: #2b2b2b;
+            text-align: center;
+        }
+
+        #links {
+            position: absolute;
+            top: 10vh;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+
+        #videoLinks {
+            /* width: 75vw; */
+            text-align: center;
+            list-style: none;
+            padding: 0;
+            margin: auto;
+        }
+
+        .link {
+            margin: 24px;
+            display: inline-block;
+            width: 400px;
+            height: 225px;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+            border-radius: 16px;
+        }
+
+        .video-container {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: none;
+        }
+
+        video {
+            border-radius: 16px;
+            position: absolute;
+            top: 64px;
+            bottom: 64px;
+            left: 128px;
+            right: 128px;
+            width: calc(100vw - 256px);
+            height: calc(100vh - 128px);
+            background: black;
+        }
+
+        .back-button {
+            position: absolute;
+            margin: 8px;
+        }
+
+        h2 {
+            margin-top: 4px;
+            font-family: Karla, Arial, Helvetica, sans-serif;
+            letter-spacing: 2px;
+            font-size: 48px;
+            color: #2b2b2b;
+            text-align: center;
+        }
+
+        .video-controls {
+            position: absolute;
+            bottom: 0px;
+            left: 128px;
+            right: 128px;
+            width: calc(100vw - 256px);
+            height: 64px;
+        }
+
+        .video-control {
+            margin-top: 8px;
+        }
+
+        #timeline {
+            position: absolute;
+            bottom: 22px;
+            margin-left: 24px;
+            width: calc(100vw - 400px);
+            background: #747474;
+            height: 12px;
+            border-radius: 8px;
+            -webkit-appearance: none;
+        }
+
+        #timeline::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #8bc650;
+            cursor: pointer;
+        }
+
+        #volume {
+            position: absolute;
+            right: 0px;
+        }
+
+        ::cue {
+            position: absolute;
+            font-family: Karla, Arial, Helvetica, sans-serif;
+            background-color: #2b2b2b;
+        }
+
+        button {
+            background: none;
+            border: none;
+            width: 48px;
+            height: 48px;
+        }
+
+        button:focus {
+            outline: 0;
+        }
+
+        input:focus {
+            outline: 0;
+        }
+
+        i {
+            font-size: 48px;
+            color: #8bc650;
+        }
+    </style>
+    <script>
+        $(document).ready(function () {
+            $.getJSON("./content/config.json", function (content) {
+                content.forEach(video => {
+                    if (!video.visible) return;
+                    var html = `<li class="link" data-title="${video.title}" style="background-image: url('./content/${video.thumbnail}')"></li>`;
+                    $("#videoLinks").append(html);
+                });
+
+                $(".link").click(function (e) {
+                    $("video")[0].currentTime = 0;
+                    var video = content.find(video => video.title == $(this).data("title"));
+
+                    $("h2").text(video.title);
+                    $("video source").attr("src", `./content/${video.video}`);
+                    $("video track").attr("src", `./content/${video.subtitles}`);
+
+                    $(this).children().first().removeClass("fa-volume-mute");
+                    $(this).children().first().removeClass("fa-volume-off");
+                    $(this).children().first().removeClass("fa-volume-down");
+                    $(this).children().first().addClass("fa-volume-up");
+                    $("video")[0].volume = 1;
+                    $("video")[0].load();
+                    $("video")[0].play();
+
+                    $(".video-container").show()
+                });
+
+                $(".back-button").click(function (e) {
+                    $(".video-container").hide();
+                    $("video")[0].pause();
+                });
+
+                $("#playPause").click(function (e) {
+                    if ($("video")[0].paused) {
+                        $("video")[0].play();
+                        $(this).children().first().removeClass("fa-play");
+                        $(this).children().first().addClass("fa-pause");
+                    } else {
+                        $(this).children().first().removeClass("fa-pause");
+                        $(this).children().first().addClass("fa-play");
+                        $("video")[0].pause();
+                    }
+                });
+
+                $("#volume").click(function (e) {
+                    switch ($("video")[0].volume) {
+                        case 0:
+                            $(this).children().first().removeClass("fa-volume-mute");
+                            $(this).children().first().addClass("fa-volume-off");
+                            $(this).children().first().removeClass("fa-volume-down");
+                            $(this).children().first().removeClass("fa-volume-up");
+                            $("video")[0].volume = 1 / 3;
+                            break;
+                        case 1 / 3:
+                            $(this).children().first().removeClass("fa-volume-mute");
+                            $(this).children().first().removeClass("fa-volume-off");
+                            $(this).children().first().addClass("fa-volume-down");
+                            $(this).children().first().removeClass("fa-volume-up");
+                            $("video")[0].volume = 2 / 3;
+                            break;
+                        case 2 / 3:
+                            $(this).children().first().removeClass("fa-volume-mute");
+                            $(this).children().first().removeClass("fa-volume-off");
+                            $(this).children().first().removeClass("fa-volume-down");
+                            $(this).children().first().addClass("fa-volume-up");
+                            $("video")[0].volume = 1;
+                            break;
+                        case 1:
+                            $(this).children().first().addClass("fa-volume-mute");
+                            $(this).children().first().removeClass("fa-volume-off");
+                            $(this).children().first().removeClass("fa-volume-down");
+                            $(this).children().first().removeClass("fa-volume-up");
+                            $("video")[0].volume = 0;
+                            break;
+                    }
+                });
+
+                $("video").on("timeupdate", function () {
+                    if ($("video")[0].currentTime == $("video")[0].duration) {
+                        $(".video-container").hide();
+                        $("video")[0].pause();
+                        return;
+                    }
+                    var precent = $("video")[0].currentTime / $("video")[0].duration * 10000;
+                    if (Number.isNaN(precent)) precent = 1;
+                    if ($('#timeline').is(":active")) return;
+                    $("#timeline").val(precent);
+                });
+
+                $("#timeline").change(function (e) {
+                    $("video")[0].currentTime = $("video")[0].duration * ($(this).val() / 10000)
+                });
+            });
+        });
+    </script>
+</head>
+
+<body class="background">
+    <h1>Touch to play</h1>
+    <div class="links">
+        <ul id="videoLinks">
+        </ul>
+    </div>
+    <div class="video-container background">
+        <button class="back-button">
+            <i class="far fa-window-close"></i>
+        </button>
+        <h2>Title</h2>
+        <video crossorigin="anonymous">
+            <source type="video/mp4">
+            <track kind="subtitles" default>
+        </video>
+        <div class="video-controls">
+            <button class="video-control" id="playPause">
+                <i class="fas fa-pause"></i>
+            </button>
+            <input type="range" min="1" max="10000" value="1" class="video-control" id="timeline">
+            <button class="video-control" id="volume">
+                <i class="fas fa-volume-up"></i>
+            </button>
+        </div>
+    </div>
+</body>
+
+</html>
